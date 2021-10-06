@@ -9,11 +9,12 @@ from urllib.error import HTTPError
 class researchgate_crawler():
     def __init__(self, init_url):
         # USER-MODIFIABLE INPUTS
-        self.score_threshold = 2 #minimum score threshold to pull links
+        self.score_threshold = 5 #minimum score threshold to pull links
         self.max_iter = 1000 #max number of checked papers
-        self.loop_delay = 2 #seconds, stops server from kicking you out
+        self.loop_delay = 1 #seconds, stops server from kicking you out
         self.num_papers = 10 #total number of tracked papers
-        self.keywords = ["planar", "bipedal", "step"] #keywords for determining scoring
+        keyword_string = "shoe insole ground reaction force pressure center"
+        self.keywords = keyword_string.split(" ") #keywords for determining scoring
         self.filepath = "./default_dump.csv" #path to dump URLs to when done
 
         # Class variable initializations
@@ -53,19 +54,19 @@ class researchgate_crawler():
 
             #Let user know if server has stopped allowing requests because we pissed it off
             except HTTPError as e:
-                print("Too many requests. Please wait :")
+                print(e)
+                print("Please wait :")
                 print(e.headers["Retry-After"])
                 break
 
             # remove current link from end of link_list
             self.link_list.pop(0)
-            sleep(self.loop_delay)
 
     def get_score(self, words):
         #Counts occurrences of keywords
         score = 0
         for keyword in self.keywords:
-            score += words.count(keyword)
+            score += words.lower().count(keyword)
         return score
 
     def write_top_scores_to_file(self):
@@ -95,10 +96,11 @@ class researchgate_crawler():
 
     def get_soup(self, url):
         # Given a url, parse the HTML with soup as a fake firefox client and return
-        url_client = urllib.request.Request(url, headers={'User-Agent': 'Firefox/5.0'})
+        url_client = urllib.request.Request(url, headers={'User-Agent': 'Chrome/94.0.4606.71'})
         raw_page = urllib.request.urlopen(url_client).read()
         page = raw_page.decode('ISO-8859-1')
         soupage = soup(page, "html.parser")
+        sleep(self.loop_delay)
 
         return soupage
 
@@ -188,7 +190,7 @@ class researchgate_crawler():
 
 
 def main():
-    url = 'https://www.researchgate.net/publication/347280078_Does_a_Finite-Time_Double_Support_Period_Increase_Walking_Stability_for_Planar_Bipeds'
+    url = 'https://www.researchgate.net/publication/328946507_Validation_of_a_wireless_shoe_insole_for_ground_reaction_force_measurement'
     crawler = researchgate_crawler(url)
 
 if __name__ == "__main__":
