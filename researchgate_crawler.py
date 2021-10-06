@@ -2,24 +2,40 @@ from bs4 import BeautifulSoup as soup
 from unicodedata import normalize
 from operator import itemgetter
 from time import sleep
-
 import urllib.request
 from urllib.error import HTTPError
 
+
+def main():
+    url = 'https://www.researchgate.net/publication/328946507_Validation_of_a_wireless_shoe_insole_for_ground_reaction_force_measurement'
+    keywords = "shoe insole ground reaction force pressure center"
+    crawler = researchgate_crawler(url, keywords, output_file="./default_dump.csv", paper_output_count=10, http_request_delay=1)
+
+
 class researchgate_crawler():
-    def __init__(self, init_url):
-        # USER-MODIFIABLE INPUTS
-        self.score_threshold = 5 #minimum score threshold to pull links
+    # NECESSARY INITIALIZATIONS
+    # init_url_string    -> str, researchgate URL up to the end of the paper title
+    # keywords_string    -> str, space-separated words to search title and abstract for
+
+    # OPTIONAL INITIALIZATIONS
+    # output_file        -> str, path to output file for top-scoring links
+    # paper_output_count -> int, number of top-scoring papers to output
+    # http_request_delay -> int, seconds to wait after EACH http request to prevent Error 429: Too Many Requests
+
+    def __init__(self, init_url_string, keywords_string, output_file="./default_dump.csv", paper_output_count=10, http_request_delay=1):
+        # INPUTS FROM OBJECT INITIALIZATION
+        self.keywords = keywords_string.split(" ")  # keywords for determining scoring
+        self.filepath = output_file  # path to dump URLs to when done
+        self.num_papers = paper_output_count  # total number of tracked papers
+        self.loop_delay = http_request_delay #seconds, prevents Error 429: Too Many Requests
+
+        # USER-MODIFIABLE VARIABLES
+        self.score_threshold = max(2, len(self.keywords)//2) #minimum score threshold to pull links. min 2 or half number of keywords
         self.max_iter = 1000 #max number of checked papers
-        self.loop_delay = 1 #seconds, stops server from kicking you out
-        self.num_papers = 10 #total number of tracked papers
-        keyword_string = "shoe insole ground reaction force pressure center"
-        self.keywords = keyword_string.split(" ") #keywords for determining scoring
-        self.filepath = "./default_dump.csv" #path to dump URLs to when done
 
         # Class variable initializations
         self.processed_doi_list = [] #ALL processed papers have DOI added here to prevent duplicates
-        self.link_list = [init_url] #Constantly changing buffer of links to process
+        self.link_list = [init_url_string] #Constantly changing buffer of links to process
         self.top_scores = [] #scores stored as [score,doi]
         self.iter = 0 #stores number of papers checked
 
@@ -96,7 +112,7 @@ class researchgate_crawler():
 
     def get_soup(self, url):
         # Given a url, parse the HTML with soup as a fake firefox client and return
-        url_client = urllib.request.Request(url, headers={'User-Agent': 'Chrome/94.0.4606.71'})
+        url_client = urllib.request.Request(url, headers={'User-Agent': 'Firefox/5.0'})
         raw_page = urllib.request.urlopen(url_client).read()
         page = raw_page.decode('ISO-8859-1')
         soupage = soup(page, "html.parser")
@@ -188,10 +204,6 @@ class researchgate_crawler():
 
         return citation, doi, word_search
 
-
-def main():
-    url = 'https://www.researchgate.net/publication/328946507_Validation_of_a_wireless_shoe_insole_for_ground_reaction_force_measurement'
-    crawler = researchgate_crawler(url)
 
 if __name__ == "__main__":
     main()
