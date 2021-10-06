@@ -14,10 +14,10 @@ It will automatically run itself. Can be force-stopped at any point with `ctrl-c
 
 Modifiable interior parameters include:
 '''
-    score_threshold -> int, minimum score threshold required to pull links
-    max_iter        -> int, maximum number of checked papers
-    loop_delay      -> int, seconds, stops server from kicking you out
-    num_papers      -> int, total number of tracked papers
-    keywords        -> list, strings, keywords for determining scoring
-    filepath        -> string, path to dump top-scoring URLs **as they are found**
+score_threshold -> int, minimum score threshold required to pull links
+max_iter        -> int, maximum number of checked papers
+loop_delay      -> int, seconds, stops server from kicking you out
+num_papers      -> int, total number of tracked papers
+keywords        -> list, strings, keywords for determining scoring
+filepath        -> string, path to dump top-scoring URLs **as they are found**
 '''
